@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:notes_app/components/note_delete_dialog.dart';
 import 'package:notes_app/components/note_input_dialog.dart';
 import 'package:notes_app/components/note_item.dart';
 
@@ -33,6 +34,7 @@ class NotesScreenState extends State<NotesScreen> {
   // Controllers and state variables
   TextEditingController noteController = TextEditingController();
   Map<String, dynamic>? editingNote;
+  String? noteToDelete;
 
   // Function to add a new note
   void saveNote() {
@@ -67,9 +69,17 @@ class NotesScreenState extends State<NotesScreen> {
   }
 
   // Function to delete a note
-  void deleteNote(String id) {
+  void askDeleteNote(String id) {
     setState(() {
-      notes.removeWhere((note) => note['id'] == id);
+      noteToDelete = id;
+    });
+    showDeleteDialog();
+  }
+
+  void deleteNote() {
+    setState(() {
+      notes.removeWhere((note) => note['id'] == noteToDelete);
+      noteToDelete = null;
     });
   }
 
@@ -89,6 +99,15 @@ class NotesScreenState extends State<NotesScreen> {
         isEditing: editingNote != null,
         onSave: saveNote,
       ),
+    );
+  }
+
+  void showDeleteDialog() {
+    showDialog(
+      context: context, 
+      builder: (context) => NoteDeleteDialog(
+          onDelete: deleteNote
+        ),
     );
   }
 
@@ -157,7 +176,7 @@ class NotesScreenState extends State<NotesScreen> {
                       return NoteItem(
                         note: notes[index],
                         onEdit: editNote,
-                        onDelete: deleteNote,
+                        onDelete: askDeleteNote,
                       );
                     },
                   )

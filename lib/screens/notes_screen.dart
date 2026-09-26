@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:notes_app/components/note_input_dialog.dart';
+import 'package:notes_app/components/note_item.dart';
 
 class NotesScreen extends StatefulWidget {
   const NotesScreen({super.key});
@@ -33,7 +35,7 @@ class NotesScreenState extends State<NotesScreen> {
   Map<String, dynamic>? editingNote;
 
   // Function to add a new note
-  void addNote() {
+  void saveNote() {
     if (noteController.text.trim().isEmpty) return;
 
     setState(() {
@@ -62,7 +64,6 @@ class NotesScreenState extends State<NotesScreen> {
     });
 
     noteController.clear();
-    Navigator.pop(context); // Close the dialog
   }
 
   // Function to delete a note
@@ -83,29 +84,10 @@ class NotesScreenState extends State<NotesScreen> {
   void showNoteDialog() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(editingNote != null ? 'Edit Note' : 'Add New Note'),
-        content: TextField(
-          controller: noteController,
-          decoration: InputDecoration(
-            hintText: 'Enter your note here...',
-            border: OutlineInputBorder(),
-          ),
-          maxLines: 5,
-          autofocus: true,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            style: TextButton.styleFrom(foregroundColor: Colors.grey),
-            child: Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: addNote,
-            style: TextButton.styleFrom(foregroundColor: Colors.blue),
-            child: Text('Save'),
-          ),
-        ],
+      builder: (context) => NoteInputDialog(
+        controller: noteController,
+        isEditing: editingNote != null,
+        onSave: saveNote,
       ),
     );
   }
@@ -172,62 +154,10 @@ class NotesScreenState extends State<NotesScreen> {
                     padding: EdgeInsets.all(15),
                     itemCount: notes.length,
                     itemBuilder: (context, index) {
-                      final note = notes[index];
-                      return Container(
-                        margin: EdgeInsets.only(bottom: 12),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.1),
-                              blurRadius: 4,
-                              offset: Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Padding(
-                          padding: EdgeInsets.all(15),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    note['content'],
-                                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                                  ),
-                                  Text(
-                                    note['createdAt'],
-                                    style: TextStyle(fontSize: 10, color: Colors.grey),
-                                  )
-                                ],
-                              ),
-                              SizedBox(height: 10),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  TextButton(
-                                    onPressed: () => editNote(note),
-                                    child: Text(
-                                      'Edit',
-                                      style: TextStyle(color: Colors.blue),
-                                    ),
-                                  ),
-                                  TextButton(
-                                    onPressed: () =>
-                                        deleteNote(note['id']),
-                                    child: Text(
-                                      'Delete',
-                                      style: TextStyle(color: Colors.red),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
+                      return NoteItem(
+                        note: notes[index],
+                        onEdit: editNote,
+                        onDelete: deleteNote,
                       );
                     },
                   )
